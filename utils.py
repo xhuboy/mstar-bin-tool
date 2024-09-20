@@ -76,7 +76,7 @@ def splitFile(file, destdir, chunksize):
 
 	assert len(chunks) <= 9999			
 	return chunks
-	
+
 def sparse_split(file, destdir, chunksize):
 	(name, ext) = os.path.splitext(os.path.basename(file))
 	chunks = []
@@ -90,11 +90,22 @@ def sparse_split(file, destdir, chunksize):
 	dest = os.path.join(destdir, name + "_sparse")
 	os.system('bin\\sparse\\simg2simg.exe' + ' {} {} {}'.format(src, dest, chunksize))
 	namesList = list(filter(lambda s: s.startswith(name + '_sparse'), os.listdir(destdir)))
+	namesList.sort(key=lambda x: int(re.findall(r"\d+",x)[0]))
+	
 	for name in namesList:
 		chunks.append(os.path.join(destdir, name))
 	return chunks
-	
-	
+
+def userdata_restory(partName, srcdir, destdir):
+	chunks = []
+	namesList = list(filter(lambda s: s.startswith(partName + '_sparse'), os.listdir(srcdir)))
+	namesList.sort(key=lambda x: int(re.findall(r"\d+",x)[0]))
+
+	for partName in namesList:
+		shutil.copyfile(os.path.join(srcdir, partName), os.path.join(destdir, partName))
+		chunks.append(os.path.join(destdir, partName))
+	return chunks
+
 # Append src file to dest file
 # bufsize - chunk size
 def appendFile(src, dest, bufsize = 16 * MB):
@@ -156,7 +167,7 @@ def lzo(src, dest):
 	
 def sparse_to_img (src, dest):
 	os.system('bin\\sparse\\simg2img.exe' + ' {} {}'.format(src, dest))
-	
+
 def img_to_sparse (src, dest):
 	os.system('bin\\sparse\\img2simg.exe' + ' {} {}'.format(src, dest))
 

@@ -142,10 +142,10 @@ for line in headerScript.splitlines():
 				print ("[i] Partition: {}\tOffset: {}\tSize {} ({}) -> {}".format(params["partition_name"], offset, size, utils.sizeStr(int(size, 16)), outputLzoFile))
 				utils.copyPart(inputFile, outputLzoFile, int(offset, 16), int(size, 16))
 				# unpack .lzo -> .img
-				print ("[i]     Unpacking LZO (Please be patient) {} -> {}".format(outputLzoFile, outputImgFile))
-				utils.unlzo(outputLzoFile, outputImgFile)
-				# delete .lzo
-				os.remove(outputLzoFile)
+				if ('system' in outputLzoFile):
+					print ("[i]     Unpacking LZO (Please be patient) {} -> {}".format(outputLzoFile, outputImgFile))
+					utils.unlzo(outputLzoFile, outputImgFile)
+					os.remove(outputLzoFile)
 
 			if params["action"] == "unlzo.continue":
 				if not params["partition_name"] in counter:
@@ -167,12 +167,17 @@ for line in headerScript.splitlines():
 				# delete chunk
 				os.remove(outputChunkLzoFile)
 				os.remove(outputChunkImgFile)
-for partName in sparseList:
-	print ("[i] Sparse: converting {}_sparse.* to {}.img".format(partName, partName))
-	sparseFiles = os.path.join(outputDirectory, partName + '_sparse.*')
-	sparseFilesConv = utils.convertInputSparseName(sparseFiles)
-	outputImgFile = os.path.join(outputDirectory, partName + ".img")
-	utils.sparse_to_img(sparseFilesConv, outputImgFile)
-	os.system('del ' + sparseFiles)
+
+for partName in sparseList:	
+	if (partName == 'system') or (partName == 'vendor') or (partName == 'super'):
+		print ("[i] Sparse: converting {}_sparse.* to {}.img".format(partName, partName))
+		sparseFiles = os.path.join(outputDirectory, partName + '_sparse.*')
+		sparseFilesConv = utils.convertInputSparseName(sparseFiles)
+		outputImgFile = os.path.join(outputDirectory, partName + ".img")
+		utils.sparse_to_img(sparseFilesConv, outputImgFile)
+		#	delete system_sparse.* and vendor_sparse.* and super_sparse.*
+		os.system('del ' + sparseFiles)
+	else:
+		print ("[i] Sparse: remain {}_sparse.* to {}_sparse.*".format(partName, partName))
 print ("[i] Done.")
 
